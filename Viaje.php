@@ -7,22 +7,32 @@ class Viaje{
     private $destinoViaje;
     private $maxPasajeros;
     private $array_pasajeros;
-    private $responsableV;
+    private $responsableV;    //es un objeto
+
+    private $costoViaje;
+    private $acumPasajesVendidos;
 
 
 
 
 //metodo constructor de la clase Viajes
-public function __construct($codigoViaje,$destinoViaje,$maxPasajeros){
+public function __construct($codigoViaje,$destinoViaje,$maxPasajeros,$objResponsableV, $costoViaje, $acumPasajesVendidos){
    
     $this->codigoViaje=$codigoViaje;
     $this->destinoViaje=$destinoViaje;
     $this->maxPasajeros=$maxPasajeros;
-    $this->array_pasajeros=[];                                      
+    $this->array_pasajeros=[];                                  
+    $this->responsableV=$objResponsableV; 
+
+
+    $this->costoViaje= $costoViaje;
+    $this->acumPasajesVendidos=$acumPasajesVendidos;
 }
 
-//metodos de acceso GET                               //pasajeros y responsable son objetos, por lo que no hay metodos get y set
-  
+
+
+
+//metodos de acceso GET                               
 
 public function getCodigoViaje(){
     return $this->codigoViaje;
@@ -40,6 +50,18 @@ public function getArrayPasajeros(){
     return $this->array_pasajeros;
 }
 
+public function getResponsableV(){
+    return $this->responsableV;
+}
+
+public function getCostoViaje(){
+    return $this->costoViaje;
+}
+public function getAcumPasajesVendidos(){
+    return $this->acumPasajesVendidos;
+}
+
+
 
 
 
@@ -54,9 +76,23 @@ public function setDestinoViaje($destinoViaje){
 public function setMaxPasajeros($maxPasajeros){
     $this->maxPasajeros=$maxPasajeros;
 }
-public function setArrayPasajeros($arrayPasajeros){
-    $this->array_pasajeros=$arrayPasajeros;
+public function setArrayPasajeros($objPasajero){          
+    $this->array_pasajeros=$objPasajero;
 }
+
+public function setResponsableV($objResponsableV){
+    $this->responsableV=$objResponsableV;
+}
+
+
+public function setCostoViaje($costoViaje){
+    $this->costoViaje=$costoViaje;
+}
+
+public function setAcumPasajesVendidos($acumPasajesVendidos){
+    $this->acumPasajesVendidos= $acumPasajesVendidos;
+}
+
 
 
 
@@ -64,17 +100,52 @@ public function setArrayPasajeros($arrayPasajeros){
 //mas funciones
 
 
-public function agregarPasajero($pasajero){
-   
-    $dni = $pasajero->getNumDocP();
 
-    //Para no agregar duplicado, verifico que no exista
-    if(!array_key_exists($dni, $this->array_pasajeros)){
 
-       $this->array_pasajeros[$dni] = $pasajero;
-    }
-
+// funcion para ver si hay pasajes disponibles en el viaje,es decir, si hay espacio libre para ingresar un pasajero
+public function hayPasajeDisponible(){
+    $capacidadMax=$this->getMaxPasajeros();
+    $numPasajeros= count($this->getArrayPasajeros());
+    
+    if($capacidadMax-$numPasajeros<0){
+        $disponibilidad= false;
+    }else{
+        $disponibilidad=true;
+    }       
+    return $disponibilidad;
 }
+
+
+// funcion para vender pasaje
+public function venderPasaje($objPasajero){
+        //incorporp el objPasajero al array pasajero?
+        $this->setArrayPasajeros($objPasajero);  
+
+        if($objPasajero instanceof pasajeroEstandar){
+            $porcentajeInc=$objPasajero->darPorcentajeIncremento();
+            $precioViaje=$this->getCostoViaje();
+            $precioFinal= $precioViaje + (($precioViaje* $porcentajeInc)/100);
+        }
+        
+        if($objPasajero instanceof PasajeroVip){
+            $precioViaje=$this->getCostoViaje();
+            $porcentajeInc=$objPasajero->darPorcentajeIncremento();
+            $precioFinal= $precioViaje + (($precioViaje* $porcentajeInc)/100);
+        }
+
+        if($objPasajero instanceof PasajeroEspecial){
+            $precioViaje=$this->getCostoViaje();
+            $porcentajeInc=$objPasajero->darPorcentajeIncremento();
+            $precioFinal= $precioViaje + (($precioViaje* $porcentajeInc)/100);
+        }
+
+        return $precioFinal;
+ }
+
+
+
+
+
 
 public function eliminarPasajero($dni){
 
@@ -90,7 +161,7 @@ public function eliminarPasajero($dni){
 
 
 
-//funciones para modificar datos de pasajero (PREGUNTAR EL CASO DEL MODIFICAR DNI DEL PASAJERO)
+//funciones para modificar datos de pasajero
 
 public function modificarNombrePasajero($dni, $nombreNuevo){
 
@@ -117,20 +188,63 @@ public function modificarTelefonoPasajero($dni,$telefonoNuevo){
     }
 }
 
-
-
-
-
-//funciones para "responsable del viaje"
-
-public function agregarResponsableV($responsableV){
-    
-    $this->responsableV = $responsableV;
-}
-
+//funcion/es para responsable del viaje
 public function eliminarResponsableV(){
     $this->responsableV = null;
 }
+
+
+
+//metodo toString    //CORREGIR LA PARTE DE PASAJEROS
+public function toString(){
+    
+        $resultado = "\n". "Vuelo de código: " . $this->codigoViaje .
+                      "\n" ." Destino: " . $this->destinoViaje .               
+                      "\n".  " Cantidad máxima: " . $this -> maxPasajeros .
+                      "\n". "responsable del viaje:" . $this->responsableV;
+        
+        foreach ($this->array_pasajeros as $pasajero){
+           $resultado = $resultado . "  ". $pasajero . "\n";
+        }
+        return $resultado;
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+//funciones para "responsable del viaje"
+
+
+
 
 public function modificarNumResponsable($numeroEmpleado){
     $this->responsableV -> setNumEmpleado($numeroEmpleado);
@@ -149,23 +263,16 @@ public function modificarNombreResponsable($nombreResponsable){
 public function modificarApellidoResponsable($apellidoResponsable){
     $this-> responsableV -> setApellidoEmpleado($apellidoResponsable);
 }
+*/
+/*
+public function agregarPasajero($pasajero){
+   
+    $dni = $pasajero->getNumDocP();
 
+    //Para no agregar duplicado, verifico que no exista
+    if(!array_key_exists($dni, $this->array_pasajeros)){
 
+       $this->array_pasajeros[$dni] = $pasajero;
+    }
 
-
-//metodo toString
-public function toString(){
-    {
-        $resultado =  "Vuelo de código: " . $this->codigoViaje ."\n".
-                     " Destino: " . $this->destinoViaje ."\n".
-                     " Cantidad máxima: " . $this -> maxPasajeros. "\n";
-  
-        foreach ($this->array_pasajeros as $pasajero){
-           $resultado = $resultado . "  ". $pasajero . "\n";
-        }
-  
-        $resultado = $resultado . $this->responsableV . "\n";
-        return $resultado;
-    }   
-}
-}
+}*/

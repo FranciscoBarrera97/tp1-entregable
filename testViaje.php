@@ -1,11 +1,18 @@
 <?php
 
-include "viaje.php";
-include "pasajero.php";
-include "responsableV.php";
+include_once "Viaje.php";         
+include_once "pasajero.php"; 
+include_once "pasajeroEspecial";
+include_once "pasajeroVip";     
+include_once "pasajeroEstandar.php";
+include_once "responsableV.php";
 
-$opcionElegida=-1;
 
+$viaje= new Viaje(0,null,0,[], null, 0, 0 );
+
+
+
+$opcionElegida=-1;   
 while ($opcionElegida != 0 ){
 
       echo "-------------------------------------------\n";
@@ -27,22 +34,27 @@ while ($opcionElegida != 0 ){
       echo "------------------------------------------\n";
   
 
-      $opcionElegida=readline("Ingrese una opción: ");   // nota: es similar que usar trim(fgets(STDIN)), pero mas corto y devuelve un string
+      $opcionElegida=readline("Ingrese una opción: ");   /* nota: es similar que usar trim(fgets(STDIN)), pero mas corto y devuelve un string */
 
       switch ($opcionElegida){
-            case "1" : //crear viaje
+            case "1" : //crear viaje (se modifican los datos del objeto $viaje inicializado)
 
                   $codigo = readline("Ingrese el código del viaje: ");
                   $destino = readline("Ingrese el destino del viaje: ");
                   $cantMax =  readline("Ingrese la cantidad máxima del viaje: ");
+                  $costoInicial= readline("Ingrese el costo inicial del viaje: ");
 
-                  $viaje = new Viaje($codigo, $destino, $cantMax);
+                  $viaje->setCodigoViaje($codigo);
+                  $viaje->setDestinoViaje($destino);
+                  $viaje->setMaxPasajeros($cantMax);
+                  $viaje->setCostoViaje($costoInicial);
+                  
             break;
 
                               
             case "2" : //añadir pasajero
                  
-                  if ($viaje === null) {
+                  if ($viaje === null) {                                //VER SI CORRE ESTO,ya que el viaje se inicializa "null"
 
                         echo "Primero, debe crear el viaje en la opción 1 \n";
                     } else {
@@ -51,11 +63,63 @@ while ($opcionElegida != 0 ){
                         $nombre = readline("Ingrese el nombre del pasajero: ");
                         $apellido =  readline("Ingrese el apellido del pasajero: ");
                         $telefono = readline("Ingrese el telefono del pasajero: ");
-        
-        
-                        $nuevoPasajero = new Pasajero($dni, $nombre, $apellido, $telefono);
-        
-                        $viaje->agregarPasajero($nuevoPasajero);
+                        
+                        echo "Ingrese '1' si el pasajero es estandar, '2' si es VIP o '3' si es especial". "\n";
+                        $tipoPasajero= trim(fgets(STDIN));
+                        if(($tipoPasajero >3) || ($tipoPasajero<1)){
+                              echo "debe elegir un valor entre 1 y 3";
+                              $tipoPasajero= trim(fgets(STDIN));
+                        }else{
+                              if ($tipoPasajero==1){
+                                    //creo pasajero estandar
+                                    $nuevoPasajero= new PasajeroEstandar($dni,$nombre,$apellido,$telefono, null, null);
+                              }
+                              if ($tipoPasajero==2){
+                                    //creo pasajero vip
+                                    $nViajeroFrecuente= readline("Ingrese el numero de viajero frecuente: ");
+                                    $totalMillas= readline ("Ingrese la cantidad de millas del pasajero vip: ");
+                                    
+                                    $nuevoPasajero= new PasajeroVip($dni,$nombre,$apellido,$telefono, null, null,$nViajeroFrecuente,$totalMillas);
+                              }
+                             
+                              if ($tipoPasajero==3){
+                              //creo pasajero especial 
+                              // $contNecesidades se refiere a la cantidad de servicios que requiere el pasajero especial
+                                    $contNecesidades=0;
+                                    echo "Necesita servicios especiales?" . "\n";
+                                    $rta= trim(fgets(STDIN));
+                                    if(($rta=="si") || ($rta=="s") || ($rta=="S")){
+                                          $contNecesidades=$contNecesidades + 1;
+                                    }
+                                    
+                                    echo "Necesita Asistencia?" . "\n";
+                                    $rta= trim(fgets(STDIN));
+                                    if(($rta=="si") || ($rta=="s") || ($rta=="S")){
+                                          $contNecesidades=$contNecesidades + 1;
+                                    }
+
+                                    echo "Necesita servicios especiales? s/n" . "\n";
+                                    $rta= trim(fgets(STDIN));
+                                    if(($rta=="si") || ($rta=="s") || ($rta=="S")){
+                                          $contNecesidades=$contNecesidades + 1;
+                                    }
+
+                                    $nuevoPasajero= new PasajeroEspecial($dni, $nombre, $apellido, $telefono, null,null, $contNecesidades);
+                              }
+                        }
+                        //veo si hay lugar para incluir pasajero 
+                        $hayDisponibilidad= $viaje->hayPasajeDisponible();
+                        if($hayDisponibilidad==true){
+                               //Tengo que aplicar la funcion venderPasaje($objPasajero)
+                               $viaje->venderPasaje($nuevoPasajero);                                  //duda con el retorno de esta funcion
+                              
+                              //Si se logra vender el pasaje, habria que completar los atributos del pasajero?
+                              $nAsiento= readline ("Ingrese numero de asiento del pasajero: ");
+                              $nTicket= readline ("ingrese numero de ticket del pasajero: ");
+                              $nuevoPasajero->setNumAsiento($nAsiento);
+                              $nuevoPasajero-> setNumTicket($nTicket);
+                        }     
+                         
                     }
         
             break;
@@ -78,7 +142,7 @@ while ($opcionElegida != 0 ){
                         echo "-----------------------------------------\n";
                         echo "|       Seleccione una opción           |\n";
                         echo "-----------------------------------------\n";
-                        echo "| 1. Opción 1:  Modificar dni           |\n"; // Preguntar si es necesario cambiar, porque se supone que un pasajero no cambia de dni, es unico
+                        echo "| 1. Opción 1:  Modificar dni           |\n"; 
                         echo "| 2. Opción 2:  Modificar nombre        |\n";
                         echo "| 3. Opción 3:  Modificar el apellido   |\n";
                         echo "| 4. Opción 4:  Modificar teléfono      |\n";
@@ -90,8 +154,9 @@ while ($opcionElegida != 0 ){
 
                         switch($opcion_modificar){
                               case "1":  
-                                  $opcion_modificar=0;
-                                    //modificar el dni (PREGUNTAR)
+                                  //modificar el dni
+                                    $opcion_modificar=0;
+                                    
                               break;
 
                               case "2": 
@@ -180,7 +245,7 @@ while ($opcionElegida != 0 ){
                   $numero_licencia = readline("Ingrese el numero de licencia del responsable: ");
                   
                   $responsable= new ResponsableV( $numero_empleado,$numero_licencia, $nombre_responsable, $apellido_responsable);
-                  $viaje->agregarResponsableV($responsable);
+                  $viaje->setResponsableV($responsable);
             break;
 
             case "9" : //eliminar responsable del viaje;
@@ -207,23 +272,23 @@ while ($opcionElegida != 0 ){
                         switch($opcionACambiar){
                               case "1": //modificar numero de empleado
                                    $nuevoNumeroEmpleado= readline("Ingrese el nuevo numero de empleado: ") . "\n";
-                                   $viaje->modificarNumResponsable($nuevoNumeroEmpleado);
+                                   $responsable->setNumEmpleado($nuevoNumeroEmpleado);
                               break;
                               
                               case "2": //modificar numero de licencia
                                     $nuevoNumLicencia= readline("Ingrese el nuevo numero de licencia del empleado: ") . "\n";
-                                    $viaje->modificarLicenciaResponsable($nuevoNumLicencia);
+                                    $responsable->setNumeroLicencia($nuevoNumLicencia);
                               break;
                               
                               case "3": //modificar nombre del responsable
                                     $nuevoNombreEmpleado= readline("Ingrese el nuevo nombre del empleado: ") . "\n";
-                                    $viaje->modificarNombreResponsablele($nuevoNombreEmpleado);
+                                    $responsable->setNombreEmpleado($nuevoNombreEmpleado);
                               
                               break;
                          
                                case "4": //modificar apellido del responsable
                                     $nuevoNumeroEmpleado= readline("Ingrese el nuevo apellido del empleado: ") . "\n";
-                                    $viaje-> setApellidoEmpleado($nuevoNumeroEmpleado);
+                                    $responsable-> setApellidoEmpleado($nuevoNumeroEmpleado);
                               break;
                    
                               case "0":
@@ -237,7 +302,7 @@ while ($opcionElegida != 0 ){
 
             case "11" :  //ver datos del viaje;
 
-                  echo $viaje;
+                  echo $viaje . "\n";
             break;
             
             case "0" :

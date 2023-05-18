@@ -4,14 +4,20 @@ class Pasajero{
     private $apellidoP;
     private $numDocP;
     private $telefonoP;
+    private $numAsiento;
+    private $numTicket;
 
+    
 
 //metodo constructor
-public function __construct($numDocP,$nombreP,$apellidoP,$telefonoP){
+public function __construct($numDocP,$nombreP,$apellidoP,$telefonoP, $numAsiento, $numTicket){
     $this->nombreP=$nombreP;
     $this->apellidoP=$apellidoP;
     $this->numDocP=$numDocP;
     $this->telefonoP=$telefonoP;
+    
+    $this->numAsiento=$numAsiento;
+    $this->numTicket=$numTicket;
 }
 
 
@@ -21,7 +27,7 @@ public function getNombreP(){
 }
 
 public function getApellidoP(){
-    return $this->nombreP;
+    return $this->apellidoP;
 }
 
 public function getNumDocP(){
@@ -31,6 +37,21 @@ public function getNumDocP(){
 public function getTelefonoP(){
     return $this->telefonoP;
 }
+
+
+
+
+
+public function getNumAsiento(){
+    return $this->numAsiento;
+}
+
+public function getNumTicket(){
+    return $this->numTicket;
+}
+
+
+
 
 
 //metodos SET
@@ -52,11 +73,38 @@ public function setTelefonoP($telefonoP){
 }
 
 
+
+
+public function setNumAsiento($numAsiento){
+    $this->numAsiento=$numAsiento;
+}
+
+public function setNumTicket($numTicket){
+    $this->numTicket=$numTicket;
+}
+
+
+
+
+
 //toString de pasajero
 public function __toString(){
-    return "PASAJERO DNI: " . $this->numDocP . "\n" . 
-            " Nombre: " . $this->nombreP . "\n" . 
-            " Apellido: " . $this->apellidoP . "\n" . 
-            " Telefono: " . $this->telefonoP . "\n" ;
+    return "\n" ."PASAJERO DNI: " . $this->getNumDocP() . 
+            "\n" . " Nombre: " . $this->getNombreP() . 
+            "\n" . " Apellido: " . $this->getApellidoP() .  
+            "\n" . " Telefono: " . $this->getTelefonoP() .
+            "\n" . "Numero de Asiento:". $this->getNumAsiento(); 
+            "\n" . "Numero de Ticket". $this->getNumTicket();
+}
+
+
+
+
+
+
+//funcion para dar porcentaje de incremento 
+public function darPorcentajeIncremento(){
+    $porcentaje= 0;
+    return $porcentaje;
 }
 }
